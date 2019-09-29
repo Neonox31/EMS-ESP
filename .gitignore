@@ -9,7 +9,7 @@
 .pio
 .clang_complete
 .gcc-flags.json
-platformio.ini
+# platformio.ini
 lib/readme.txt
 .travis.yml
 
