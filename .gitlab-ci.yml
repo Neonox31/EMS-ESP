@@ -1,0 +1,42 @@
+variables:
+  PLATFORMIO_VERSION: 4.0.0
+  LAN_IP_ADDRESS: 192.168.10.53
+
+stages:
+  - 👷 build
+  - 🚀 deploy
+
+build:
+  stage: 👷 build
+  image:
+    name: nikolaik/python-nodejs
+    entrypoint: [""]
+  before_script:
+    - pip install -U platformio==${PLATFORMIO_VERSION}
+    - pio --version
+    - pio init
+    - npm --prefix tools/webfilesbuilder install
+    - npm --prefix tools/webfilesbuilder start
+  script:
+    - pio run
+  artifacts:
+    paths:
+      - .pio/build/release/*.bin
+
+USB flash 🔌:
+  stage: 🚀 deploy
+  tags:
+    - lweber-laptop
+  image:
+    name: neonox31/esp-tools
+  script:
+    - esptool.py -p /dev/ttyUSB0 write_flash 0x00000 .pio/build/release/*.bin
+  when: manual
+
+OTA flash 📶:
+  stage: 🚀 deploy
+  image:
+    name: neonox31/esp-tools
+  script:
+    - espota.py -i "${LAN_IP_ADDRESS}" -f .pio/build/release/*.bin
+  when: manual
